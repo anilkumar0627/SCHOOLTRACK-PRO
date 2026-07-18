@@ -44,7 +44,13 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      // Soft-fallback signing: use release key if configured, otherwise default to debugConfig
+      val isReleaseSigningConfigured = (System.getenv("STORE_PASSWORD") != null) || file("${rootDir}/my-upload-key.jks").exists()
+      signingConfig = if (isReleaseSigningConfigured) {
+        signingConfigs.getByName("release")
+      } else {
+        signingConfigs.getByName("debugConfig")
+      }
     }
     debug { signingConfig = signingConfigs.getByName("debugConfig") }
   }
@@ -107,6 +113,8 @@ dependencies {
   // implementation(libs.androidx.credentials.play.services)
   // implementation(libs.googleid)
   implementation(libs.firebase.appcheck.recaptcha)
+  implementation(libs.play.services.ads)
+  implementation(libs.user.messaging.platform)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.logging.interceptor)
