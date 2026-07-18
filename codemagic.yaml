@@ -9,7 +9,7 @@ workflows:
     environment:
       java: 17
       vars:
-        GRADLE_VERSION: "8.10.2"
+        GRADLE_VERSION: "9.3.1"
     triggering:
       events:
         - push

@@ -4,6 +4,10 @@
 
     <!-- Declare attribution tags for Play Services/AdMob data access to comply with Android 11+ AppOps policies -->
     <attribution
+        android:tag="null"
+        android:label="@string/play_services_ads_attribution_label" />
+
+    <attribution
         android:tag="play-services-ads"
         android:label="@string/play_services_ads_attribution_label" />
 
