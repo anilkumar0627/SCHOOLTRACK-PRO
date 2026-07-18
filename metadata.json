@@ -1,0 +1,6 @@
+{
+  "name": "SchoolTrack Pro",
+  "description": "Multi-School Transport Management and School Registration System with interactive OpenStreetMap live tracking, secure role-based controls, and fully isolated data.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
