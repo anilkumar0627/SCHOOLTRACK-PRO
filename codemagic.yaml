@@ -1,0 +1,59 @@
+# Codemagic CI/CD configuration for SchoolTrack Pro SaaS Enterprise Android Application
+# For complete documentation, please visit https://docs.codemagic.io/
+
+workflows:
+  android-build:
+    name: SchoolTrack Pro Android CI/CD Pipeline
+    max_build_duration: 60
+    instance_type: mac_mini_m1 # Premium fast build machine
+    environment:
+      groups:
+        # Secure credentials like keystores or API tokens can be injected here via the Codemagic Dashboard
+      vars:
+        JAVA_VERSION: "17"
+        GRADLE_VERSION: "8.2"
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch_patterns:
+        - pattern: '*'
+          include: true
+          source: true
+    scripts:
+      - name: Configure Java Environment
+        script: |
+          echo "Setting Java environment..."
+          jdk-switch --version $JAVA_VERSION
+      - name: Generate Gradle Wrapper
+        script: |
+          # Automatically generates the Gradle wrapper if not present in repository
+          if [ ! -f "gradlew" ]; then
+            echo "Gradle wrapper not found, generating wrapper..."
+            gradle wrapper --gradle-version $GRADLE_VERSION
+          fi
+          chmod +x gradlew
+      - name: Run JVM Unit Tests
+        script: |
+          echo "Executing test suites..."
+          ./gradlew testDebugUnitTest --continue
+        ignore_failure: true
+      - name: Compile Debug APK
+        script: |
+          echo "Building Debug APK..."
+          ./gradlew assembleDebug
+      - name: Compile Release App Bundle (AAB)
+        script: |
+          echo "Building Release App Bundle..."
+          ./gradlew bundleRelease
+        ignore_failure: true
+    artifacts:
+      - app/build/outputs/apk/**/*.apk
+      - app/build/outputs/bundle/**/*.aab
+    publishing:
+      email:
+        recipients:
+          - vikash1982vikash@gmail.com
+        notify:
+          on_success: true
+          on_failure: true
