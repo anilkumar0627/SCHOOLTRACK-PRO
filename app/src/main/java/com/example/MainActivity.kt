@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.screens.*
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.AppViewModel
+import com.example.utils.AdMobManager
 
 sealed class Screen {
     object RegisterSchool : Screen()
@@ -26,6 +27,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Initialize User Messaging Platform (UMP) Consent and Google AdMob SDK
+        AdMobManager.initializeConsentAndAds(this)
+
         setContent {
             val appViewModel: AppViewModel = viewModel()
             val currentSchool by appViewModel.currentSchool.collectAsState()

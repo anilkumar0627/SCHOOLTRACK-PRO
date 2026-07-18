@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.app.Activity
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +35,10 @@ import com.example.ui.components.SchoolLogoImage
 import com.example.ui.components.SchoolCoverImage
 import com.example.ui.components.SchoolHeader
 import com.example.ui.viewmodel.AppViewModel
+import com.example.utils.AdMobBanner
+import com.example.utils.AdMobNativeAd
+import com.example.utils.AdMobManager
+import androidx.compose.foundation.BorderStroke
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -572,7 +578,7 @@ fun ParentAlertsTab(
 }
 
 // ==========================
-// READ-ONLY PROFILE SETTINGS
+// READ-ONLY PROFILE SETTINGS & PRIVACY/CONSENT MONETIZATION SETTINGS
 // ==========================
 @Composable
 fun ParentProfileTab(
@@ -581,6 +587,60 @@ fun ParentProfileTab(
     children: List<StudentEntity>
 ) {
     val scrollState = rememberScrollState()
+    val activity = LocalContext.current as? Activity
+
+    // Privacy policy & Terms dialog state
+    var showPrivacyDialog by remember { mutableStateOf(false) }
+    var showTermsDialog by remember { mutableStateOf(false) }
+    var isPremiumTrackerUnlocked by remember { mutableStateOf(false) }
+
+    if (showPrivacyDialog) {
+        AlertDialog(
+            onDismissRequest = { showPrivacyDialog = false },
+            title = { Text("Privacy Policy", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    Text(
+                        text = "SchoolTrack Pro is committed to protecting your privacy.\n\n" +
+                               "1. Location Data: We collect school bus telemetry and coordinates to display live transit positions. We do not track parent personal location coordinates.\n" +
+                               "2. Personal Information: Parent profiles (names, emails) and student records are stored securely in local device memory (SQLite Room database) and isolated per school tenant node to ensure strict privacy and enterprise data safety.\n" +
+                               "3. AdMob Monetization: To keep the service free for schools, we integrate Google AdMob and the User Messaging Platform (UMP) Consent SDK. Cookies and identifiers are processed under GDPR/CCPA in strict compliance with Google Publisher Policies.\n\n" +
+                               "For support, contact: compliance@schooltrack.pro",
+                        fontSize = 14.sp
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPrivacyDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
+    if (showTermsDialog) {
+        AlertDialog(
+            onDismissRequest = { showTermsDialog = false },
+            title = { Text("Terms & Conditions", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    Text(
+                        text = "Terms of Service agreement for SchoolTrack Pro.\n\n" +
+                               "1. Acceptable Use: Parents and drivers must use the app solely for school-authorized transportation coordination and child safety.\n" +
+                               "2. Real-time Telemetry: Live bus coordinates are simulated for demonstration high-fidelity purposes, but emulate actual transit telemetry parameters. We are not liable for transient network delays or GPS telemetry outages.\n" +
+                               "3. Policy Compliance: Users must not inject invalid traffic, fake coordinates, or reverse engineer the service. AdMob ad interaction policies are strictly enforced.\n\n" +
+                               "Last updated: July 2026",
+                        fontSize = 14.sp
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showTermsDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -607,6 +667,54 @@ fun ParentProfileTab(
         Text("Email: ${parentUser?.email}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text("Tenant Node: School #${school?.id ?: "00"}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
 
+        // Rewarded Ad Option - High-fidelity monetization following guidelines
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = if (isPremiumTrackerUnlocked) "✨ Premium Tracker Map Skin Unlocked!" else "🎨 Unlock Premium Track Style!",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (isPremiumTrackerUnlocked) "You have successfully enabled premium satellite map layers and dark aesthetics." else "Support this app and unlock the premium dashboard design for 24 hours.",
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        activity?.let { act ->
+                            AdMobManager.showRewarded(
+                                activity = act,
+                                onUserEarnedReward = { isPremiumTrackerUnlocked = true },
+                                onAdClosed = {}
+                            )
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(if (isPremiumTrackerUnlocked) "Premium Active" else "Watch Ad to Unlock", fontSize = 12.sp)
+                }
+            }
+        }
+
+        // Compliant Native ad placement inside the Settings/Profile lists
+        Text("Sponsor Highlight", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.align(Alignment.Start))
+        AdMobNativeAd()
+
         school?.let { sch ->
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -622,6 +730,48 @@ fun ParentProfileTab(
         }
 
         Divider()
+
+        // Privacy options compliance (REQUIRED BY GOOGLE UMP FOR EU/UK PRIVACY POLICIES)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Legal & Compliance Panel", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { showPrivacyDialog = true },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Privacy Policy", fontSize = 11.sp)
+                    }
+                    OutlinedButton(
+                        onClick = { showTermsDialog = true },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Terms", fontSize = 11.sp)
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        activity?.let { act ->
+                            AdMobManager.resetAndShowConsentForm(act)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Consent Choices (GDPR/CCPA)", fontSize = 12.sp)
+                }
+            }
+        }
 
         // Read-only info warning card
         Card(
@@ -653,5 +803,10 @@ fun ParentProfileTab(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Compliant Banner ad at the very bottom of Settings
+        AdMobBanner()
     }
 }

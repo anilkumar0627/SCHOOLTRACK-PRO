@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SchoolTrack Pro</string>
+    <string name="play_services_ads_attribution_label">Google AdMob Monetization</string>
+    <string name="play_services_measurement_attribution_label">Firebase Analytics and Measurement</string>
 </resources>

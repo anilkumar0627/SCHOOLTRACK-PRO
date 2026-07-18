@@ -7,8 +7,8 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m1 # Premium fast build machine
     environment:
+      java: 17
       vars:
-        JAVA_VERSION: "17"
         GRADLE_VERSION: "8.10.2"
     triggering:
       events:
@@ -19,10 +19,24 @@ workflows:
           include: true
           source: true
     scripts:
-      - name: Configure Java Environment
+      - name: Set Up Environment and Keystores
         script: |
-          echo "Setting Java environment..."
-          jdk-switch --version $JAVA_VERSION
+          echo "Verifying Java installation..."
+          java -version
+          
+          # Ensure a fallback .env file exists for the Secrets Gradle Plugin
+          if [ ! -f ".env" ] && [ -f ".env.example" ]; then
+            echo "Creating fallback .env from .env.example..."
+            cp .env.example .env
+          fi
+
+          # Decode the debug keystore to prevent build failures during local signing fallback
+          if [ -f "debug.keystore.base64" ]; then
+            echo "Decoding debug keystore from base64..."
+            base64 --decode debug.keystore.base64 > debug.keystore 2>/dev/null || base64 -d debug.keystore.base64 > debug.keystore
+          else
+            echo "Warning: debug.keystore.base64 not found!"
+          fi
       - name: Generate Gradle Wrapper
         script: |
           # Automatically generates the Gradle wrapper if not present in repository

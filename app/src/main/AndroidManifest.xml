@@ -2,6 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Declare attribution tags for Play Services/AdMob data access to comply with Android 11+ AppOps policies -->
+    <attribution
+        android:tag="play-services-ads"
+        android:label="@string/play_services_ads_attribution_label" />
+
+    <attribution
+        android:tag="play-services-measurement"
+        android:label="@string/play_services_measurement_attribution_label" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 

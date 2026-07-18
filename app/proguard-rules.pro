@@ -19,3 +19,20 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# ==========================================
+# PRODUCTION COMPLIANCE & SDK OPTIMIZATION RULES
+# ==========================================
+
+# Google Play Services & AdMob R8 / ProGuard Rules
+-keep class com.google.android.gms.ads.** { *; }
+-keep interface com.google.android.gms.ads.** { *; }
+
+# User Messaging Platform (UMP) Consent SDK Rules
+-keep class com.google.android.ump.** { *; }
+-keep interface com.google.android.ump.** { *; }
+
+# Room Database R8 / ProGuard Rules
+-keep class * extends androidx.room.RoomDatabase
+-dontwarn androidx.room.paging.**
+
